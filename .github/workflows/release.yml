@@ -38,7 +38,7 @@ jobs:
       with:
         draft: false
         prerelease: false
-        release_name: ${{ env.VERSION_TAG }}
+        release_name: JPKHelper v.${{ env.VERSION }}
         tag_name: ${{ env.VERSION_TAG }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
