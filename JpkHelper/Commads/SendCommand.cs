@@ -1,15 +1,14 @@
 ﻿using CommandLine;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace itp.Commads;
+namespace JpkHelper.Commads;
 
-[Verb("send", isDefault: true)]
+[Verb("send", HelpText = "Wysyła pliki do API jpk")]
 internal class SendCommand
 {
-    [Option("path-to-initUpload", HelpText = "Ścieżka do pliku init upload (nie folderu)", Required = true)]
+    [Option('p', "path-to-initUpload", HelpText = "Ścieżka do pliku init upload (nie folderu)", Required = true)]
     public required string Path { get; set; }
     [Option(shortName: 'e', longName: "enviroment", Default = EnvironmentType.Test)]
     public EnvironmentType Environment { get; set; }
@@ -53,7 +52,7 @@ internal class SendCommand
         );
         if (!response.IsSuccessStatusCode)
             throw new Exception(await response.Content.ReadAsStringAsync());
-        return await response.Content.ReadFromJsonAsync<OkResponse>(new System.Text.Json.JsonSerializerOptions()
+        return await response.Content.ReadFromJsonAsync<OkResponse>(new JsonSerializerOptions()
         {
             PropertyNameCaseInsensitive = true
         })!;
@@ -71,13 +70,10 @@ internal class SendCommand
         };
         var md5 = HashHelpers.CalculateMD5(request.FileName);
         foreach (var header in request.HeaderList)
-        {
             if (header.Key == "Content-MD5")
                 message.Content.Headers.ContentMD5 = Convert.FromBase64String(header.Value);
             else
                 message.Headers.Add(header.Key, header.Value);
-
-        }
         var x = client.Send(message);
         if (!x.IsSuccessStatusCode)
             throw new Exception(await x.Content.ReadAsStringAsync());
@@ -94,7 +90,7 @@ internal class SendCommand
             ["ReferenceNumber"] = refernceNumber,
             ["AzureBlobNameList"] = blobNameList
         };
-        var options = new System.Text.Json.JsonSerializerOptions()
+        var options = new JsonSerializerOptions()
         {
             PropertyNamingPolicy = null
         };

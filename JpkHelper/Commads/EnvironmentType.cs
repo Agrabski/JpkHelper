@@ -1,4 +1,4 @@
-﻿namespace itp.Commads;
+﻿namespace JpkHelper.Commads;
 
 public enum EnvironmentType
 {
