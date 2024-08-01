@@ -24,7 +24,7 @@ jobs:
         dotnet-version: 9.0.x
 
     - name: Create the app package
-      run: dotnet publish JpkHelper -p:ApplicationVersion=${{ env.VERSION }} -p:ApplicationDisplayVersion=${{ env.VERSION }} -f net9.0 -o out -c Release -r win7-x64
+      run: dotnet publish JpkHelper -p:ApplicationVersion=${{ env.VERSION }} -p:ApplicationDisplayVersion=${{ env.VERSION }} -f net9.0 -o out -c Release -r win-x64
 
 
     - name: Upload build artifacts
