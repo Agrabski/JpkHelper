@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "itp send": {
+    "itp make": {
       "commandName": "Project",
       "commandLineArgs": "make -f \"E:\\Datecs\\itp\\program_tests\\ITP_15072024_1.xml\" -k ToConsole"
     },

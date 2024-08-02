@@ -35,7 +35,7 @@ internal class MakeManifestCommand
             var fileName = Path.GetFileName(file);
             var compressed = await Compress(file);
             var result = Encrypt(aesKey, iv, compressed);
-            var compressedFileName = $"{fileName}.zip.aes";
+            var compressedFileName = $"{fileName}.zip.001.aes";
             using var destination = File.Create(Path.Combine(OutputPath, compressedFileName));
             destination.Write(result);
             compressedAndZippedFiles.Add(new(
@@ -203,6 +203,7 @@ internal class MakeManifestCommand
         using var aes = Aes.Create();
         aes.Key = aesKey;
         aes.KeySize = 256;
+        aes.BlockSize = 128;
         aes.Mode = CipherMode.CBC;
         return aes.EncryptCbc(compressed.AsSpan(), iv, PaddingMode.PKCS7);
     }
