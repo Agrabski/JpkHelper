@@ -4,6 +4,10 @@
       "commandName": "Project",
       "commandLineArgs": "make -f \"E:\\Datecs\\itp\\program_tests\\ITP_15072024_1.xml\" -k ToConsole"
     },
+    "itp send": {
+      "commandName": "Project",
+      "commandLineArgs": "send -p \"E:\\Datecs\\itp\\latest_signed\\InitUpload 5_MD.xml\""
+    },
     "itp help": {
       "commandName": "Project"
     }

@@ -26,10 +26,11 @@ internal class SendCommand
 
         var response = await InitUploadSigned(apiUrl, false, Path);
         Console.WriteLine($"Init upload OK. Reference number='{response.ReferenceNumber}'");
+        var directory = System.IO.Path.GetDirectoryName(Path)!;
         foreach (var item in response.RequestToUploadFileList)
         {
             Console.WriteLine($"Start upload blob {item.FileName} {item.BlobName} ");
-            await UploadBlob(item, Path);
+            await UploadBlob(item, directory);
             Console.WriteLine($"Upload blob {item.FileName} {item.BlobName} OK");
         }
         await FinishUploadAsync(apiUrl, response.ReferenceNumber, response.RequestToUploadFileList.Select(f => f.BlobName).ToArray());
@@ -61,14 +62,15 @@ internal class SendCommand
     static async Task UploadBlob(RequestToUploadFile request, string path)
     {
         using var client = new HttpClient();
-        using var stream = File.OpenRead(System.IO.Path.Combine(path, request.FileName));
+        var pathToFile = System.IO.Path.Combine(path, request.FileName);
+        using var stream = File.OpenRead(pathToFile);
         var message = new HttpRequestMessage()
         {
             Method = HttpMethod.Parse(request.Method),
             Content = new StreamContent(stream),
             RequestUri = request.Url
         };
-        var md5 = HashHelpers.CalculateMD5(request.FileName);
+        var md5 = HashHelpers.CalculateMD5(pathToFile);
         foreach (var header in request.HeaderList)
             if (header.Key == "Content-MD5")
                 message.Content.Headers.ContentMD5 = Convert.FromBase64String(header.Value);

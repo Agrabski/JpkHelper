@@ -14,4 +14,11 @@
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="Certificates\*">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
+
 </Project>

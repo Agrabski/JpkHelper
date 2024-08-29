@@ -1,6 +1,7 @@
 ﻿using CommandLine;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Xml.Linq;
 using System.Xml.Schema;
 
@@ -18,12 +19,14 @@ internal class MakeManifestCommand
     public EnvironmentType EnvironmentType { get; set; }
     [Option('o', "output", HelpText = "Folder w którym umieszczony zostanie wynik operacji", Default = "./out/")]
     public required string OutputPath { get; set; }
-    [Option('p', "public-key-file", HelpText = "Ścieżka do pliku z certyfikatem publicznym ministerstwa. Jeśli argument nie zostanie podany, program wybierze klucz na podstawie środowiska i zapisanych danych", Default = null)]
-    public string? PublicKeyFile { get; set; }
+    [Option('c', "certificate-file", HelpText = "Ścieżka do pliku z certyfikatem publicznym ministerstwa. Jeśli argument nie zostanie podany, program wybierze klucz na podstawie środowiska i zapisanych danych", Default = null)]
+    public string? CertificateFile { get; set; }
+
+    private string CertificatesDirectoryPath => Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory)!, "Certificates");
 
     internal async Task Execute()
     {
-        var publicKey = PickPublicKey();
+        var certificatePath = PickCertificatePath();
         var aesKey = new byte[32];
         var iv = new byte[16];
         Random.Shared.NextBytes(aesKey);
@@ -47,7 +50,7 @@ internal class MakeManifestCommand
                 HashHelpers.CalculateMD5(new MemoryStream(result))
             ));
         }
-        var manifest = CreateManifest(compressedAndZippedFiles, aesKey, iv, publicKey);
+        var manifest = CreateManifest(compressedAndZippedFiles, aesKey, iv, certificatePath);
         var schemaSet = new XmlSchemaSet();
         schemaSet.Add("http://e-dokumenty.mf.gov.pl", "https://www.podatki.gov.pl/media/5881/initupload.xsd");
         manifest.Validate(schemaSet, null);
@@ -71,30 +74,20 @@ internal class MakeManifestCommand
 
     }
 
-    private string PickPublicKey()
+    private string PickCertificatePath()
     {
-        if (PublicKeyFile is not null)
-            return File.ReadAllText(PublicKeyFile);
+        if (CertificateFile is not null)
+            return CertificateFile;
         return EnvironmentType switch
         {
-            EnvironmentType.Test => """
-            -----BEGIN PUBLIC KEY-----
-            MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmxUn6SiIGOkkpDXcVq7h
-            Cs3ZDubg0cFhoHcpcwAodWIAdPQeoxoyBtXo4fq5K7ia1Uai9sZMkT2lcC393BF8
-            VMTW9Uvn1HrYWGLMTXmsSMkovLMP130Nf5qIpAV3mDktQxCYtrKsDIgIHFV5cN4q
-            wJF12zA8CEwbYZzWSrIw3MGYTYF3+6kHH5AVIGKT57wwJaME/Kcn6G2wXVdspgzH
-            GWYnnwt03bKHJCRfcgP1xY0F6MwvsxHqQ5SknF0uLQ2MsEPoHMPrlBDogJMO9VZ9
-            Zex6tBdntNM2C3DQJMg/g8yGDxzWTnQHLRx+bFmx5BdX/VSaaazt6ZUHYN/Xfska
-            BQIDAQAB
-            -----END PUBLIC KEY-----
-            """,
+            EnvironmentType.Test => Path.Combine(CertificatesDirectoryPath, "test_env.pem"),
             _ => throw new NotImplementedException("Certyfikat dla tego środowiska nie został zapisany w programie")
         };
     }
 
-    private XDocument CreateManifest(List<CompressedFileInfo> compressedAndZippedFiles, byte[] aesKey, byte[] iv, string publicKey)
+    private XDocument CreateManifest(List<CompressedFileInfo> compressedAndZippedFiles, byte[] aesKey, byte[] iv, string certificatePath)
     {
-        var encryptedAndEncodedAesKey = EncryptAndEncodeAesKey(aesKey, publicKey);
+        var encryptedAndEncodedAesKey = EncryptAndEncodeAesKey(aesKey, certificatePath);
         var xmlns = XNamespace.Get("http://e-dokumenty.mf.gov.pl");
         var xsi = XNamespace.Get("http://www.w3.org/2001/XMLSchema-instance");
         var schemaLocation = XNamespace.Get("http://e-dokumenty.mf.gov.pl https://www.podatki.gov.pl/media/5881/initupload.xsd");
@@ -183,10 +176,10 @@ internal class MakeManifestCommand
         );
     }
 
-    private string EncryptAndEncodeAesKey(byte[] aesKey, string publicKey)
+    private string EncryptAndEncodeAesKey(byte[] aesKey, string certificatePath)
     {
-        var rsa = RSA.Create();
-        rsa.ImportFromPem(publicKey);
+        using var cert = new X509Certificate2(certificatePath);
+        var rsa = cert.PublicKey.GetRSAPublicKey() ?? throw new Exception();
         var result = rsa.Encrypt(aesKey, RSAEncryptionPadding.Pkcs1);
         return Convert.ToBase64String(result);
     }
