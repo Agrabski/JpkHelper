@@ -1,6 +1,11 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".github\workflows\release.yml" />
+    <File Path="README.md" />
   </Folder>
   <Project Path="JpkHelper\JpkHelper.csproj" />
+  <Properties Name="ExtensibilityGlobals">
+    <Property Name="RESX_AutoCreateNewLanguageFiles" Value="True" />
+    <Property Name="RESX_NeutralResourcesLanguage" Value="pl-PL" />
+  </Properties>
 </Solution>

@@ -8,7 +8,7 @@ using System.Xml.Linq;
 using System.Xml.Schema;
 
 namespace JpkHelper.Commads;
-[Verb("make-manifest", aliases: ["make"], HelpText = "Przygotowywuje plik InitUpload.xml oraz szyfruje pliki podlegające wysyłce")]
+[Verb("make", HelpText = nameof(Commands.MakeCommandHelpText), ResourceType = typeof(Commands))]
 internal partial class MakeManifestCommand
 {
     private readonly Dictionary<Regex, string> _schemaPaths = new()
@@ -17,19 +17,19 @@ internal partial class MakeManifestCommand
     };
     private const string ManifestFileName = "initUpload.xml";
 
-    [Option('f', "files", HelpText = "Pliki xml które mają podlegać wysyłce")]
+    [Option('f', "files", HelpText = nameof(Commands.MakeManifestFilesProperty), ResourceType = typeof(Commands), Min = 1)]
     public required IEnumerable<string> FilePaths { get; set; }
-    [Option('k', "aes-key-behaviour", Default = AESKeyBehaviour.None, HelpText = "Czy pokazać wygenerowany klucz symetryczny AES")]
+    [Option('k', "aes-key-behaviour", Default = AESKeyBehaviour.None, HelpText = nameof(Commands.MakeManifestAESKeyBehaviourProperty), ResourceType = typeof(Commands))]
     public AESKeyBehaviour AESKeyBehaviour { get; set; }
-    [Option('e', "enviroment-type", Default = EnvironmentType.Test, HelpText = "Typ środowiska")]
+    [Option('e', "enviroment-type", Default = EnvironmentType.Test, HelpText = nameof(Commands.MakeManifestEnviromentTypeProperty), ResourceType = typeof(Commands))]
     public EnvironmentType EnvironmentType { get; set; }
-    [Option('o', "output", HelpText = "Folder w którym umieszczony zostanie wynik operacji", Default = "./out/")]
+    [Option('o', "output", Default = "./out/", HelpText = nameof(Commands.MakeManifestOutputPathProperty), ResourceType = typeof(Commands))]
     public required string OutputPath { get; set; }
-    [Option('c', "certificate-file", HelpText = "Ścieżka do pliku z certyfikatem publicznym ministerstwa. Jeśli argument nie zostanie podany, program wybierze klucz na podstawie środowiska i zapisanych danych", Default = null)]
+    [Option('c', "certificate-file", Default = null, HelpText = nameof(Commands.MakeManifestCertificateFileProperty), ResourceType = typeof(Commands))]
     public string? CertificateFile { get; set; }
-    [Option('q', "no-help-text", HelpText = "Nie wyświetlaj tekstu pomocy na temat wysyłki przygotowanych plików.", Default = true)]
+    [Option('q', "no-help-text", Default = true, HelpText = nameof(Commands.MakeManifestNoHelpTextProperty), ResourceType = typeof(Commands))]
     public bool NoHelpText { get; set; }
-    [Option("fail-on-expired-certificate", Default = true, HelpText = "Przerwij pracę jeśli certyfikat jest przeterminowany")]
+    [Option("fail-on-expired-certificate", Default = true, HelpText = nameof(Commands.MakeManifestFailOnExpiredCertificateProperty), ResourceType = typeof(Commands))]
     public bool FailOnExpiredCertificate { get; set; }
 
     private string CertificatesDirectoryPath => Path.Combine(BinDirectory, "Certificates");

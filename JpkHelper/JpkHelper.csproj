@@ -28,26 +28,35 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Update="Localisation\Commands.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Commands.resx</DependentUpon>
+		</Compile>
 		<Compile Update="Localisation\Strings.en.Designer.cs">
 			<DependentUpon>Strings.en.resx</DependentUpon>
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
 		</Compile>
-		<Compile Update="Localisation\Strings.Designer.cs">
+		<Compile Update="Localisation\Strings.pl.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
-			<DependentUpon>Strings.resx</DependentUpon>
+			<DependentUpon>Strings.pl.resx</DependentUpon>
 		</Compile>
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Update="Localisation\Commands.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>Commands.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
 		<EmbeddedResource Update="Localisation\Strings.en.resx">
 			<LastGenOutput>Strings.en.Designer.cs</LastGenOutput>
-			<Generator>ResXFileCodeGenerator</Generator>
+			<Generator>PublicResXFileCodeGenerator</Generator>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Localisation\Strings.resx">
-			<Generator>ResXFileCodeGenerator</Generator>
-			<LastGenOutput>Strings.Designer.cs</LastGenOutput>
+		<EmbeddedResource Update="Localisation\Strings.pl.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>Strings.pl.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
 	</ItemGroup>
 
