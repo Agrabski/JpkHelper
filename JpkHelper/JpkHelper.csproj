@@ -8,6 +8,7 @@
 		<Authors>Adam Grabski</Authors>
 		<Copyright>Copyright $([System.DateTime]::Now.Year) $(Authors)</Copyright>
 		<PublishSingleFile>true</PublishSingleFile>
+		<NeutralResourcesLanguage>pl</NeutralResourcesLanguage>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -15,9 +16,39 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="Certificates\*">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
+		<None Update="Certificates\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Schemas\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Docs\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Localisation\Strings.en.Designer.cs">
+			<DependentUpon>Strings.en.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Localisation\Strings.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Strings.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="Localisation\Strings.en.resx">
+			<LastGenOutput>Strings.en.Designer.cs</LastGenOutput>
+			<Generator>ResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localisation\Strings.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Strings.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
 	</ItemGroup>
 
 
