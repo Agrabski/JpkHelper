@@ -1,29 +1,47 @@
 ﻿using CommandLine;
+using JpkHelper.Localisation;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using System.Xml.Schema;
 
 namespace JpkHelper.Commads;
-[Verb("make-manifest", aliases: ["make"], HelpText = "Przygotowywuje plik InitUpload.xml oraz szyfruje pliki podlegające wysyłce")]
-internal class MakeManifestCommand
+[Verb("make", HelpText = nameof(Commands.MakeCommandHelpText), ResourceType = typeof(Commands))]
+internal partial class MakeManifestCommand
 {
+    private readonly Dictionary<Regex, string> _schemaPaths = new()
+    {
+        [ITPRegex()] = "Schemas/ITP_v2-2.xsd"
+    };
     private const string ManifestFileName = "initUpload.xml";
 
-    [Option('f', "files", HelpText = "Pliki xml które mają podlegać wysyłce")]
+    [Option('f', "files", HelpText = nameof(Commands.MakeManifestFilesProperty), ResourceType = typeof(Commands), Min = 1)]
     public required IEnumerable<string> FilePaths { get; set; }
-    [Option('k', "aes-key-behaviour", Default = AESKeyBehaviour.None, HelpText = "Czy pokazać wygenerowany klucz symetryczny AES")]
+    [Option('k', "aes-key-behaviour", Default = AESKeyBehaviour.None, HelpText = nameof(Commands.MakeManifestAESKeyBehaviourProperty), ResourceType = typeof(Commands))]
     public AESKeyBehaviour AESKeyBehaviour { get; set; }
-    [Option('e', "enviroment-type", Default = EnvironmentType.Test, HelpText = "Typ środowiska")]
+    [Option('e', "enviroment-type", Default = EnvironmentType.Test, HelpText = nameof(Commands.MakeManifestEnviromentTypeProperty), ResourceType = typeof(Commands))]
     public EnvironmentType EnvironmentType { get; set; }
-    [Option('o', "output", HelpText = "Folder w którym umieszczony zostanie wynik operacji", Default = "./out/")]
+    [Option('o', "output", Default = "./out/", HelpText = nameof(Commands.MakeManifestOutputPathProperty), ResourceType = typeof(Commands))]
     public required string OutputPath { get; set; }
-    [Option('p', "public-key-file", HelpText = "Ścieżka do pliku z certyfikatem publicznym ministerstwa. Jeśli argument nie zostanie podany, program wybierze klucz na podstawie środowiska i zapisanych danych", Default = null)]
-    public string? PublicKeyFile { get; set; }
+    [Option('c', "certificate-file", Default = null, HelpText = nameof(Commands.MakeManifestCertificateFileProperty), ResourceType = typeof(Commands))]
+    public string? CertificateFile { get; set; }
+    [Option('q', "no-help-text", Default = true, HelpText = nameof(Commands.MakeManifestNoHelpTextProperty), ResourceType = typeof(Commands))]
+    public bool NoHelpText { get; set; }
+    [Option("fail-on-expired-certificate", Default = true, HelpText = nameof(Commands.MakeManifestFailOnExpiredCertificateProperty), ResourceType = typeof(Commands))]
+    public bool FailOnExpiredCertificate { get; set; }
+
+    private string CertificatesDirectoryPath => Path.Combine(BinDirectory, "Certificates");
+    private string SchemasDirectoryPath => Path.Combine(BinDirectory, "Schemas");
+
+    private static string BinDirectory => Path.GetDirectoryName(AppContext.BaseDirectory) ?? "";
+
+    private const int CompressedFileSizeLimit = 60;
 
     internal async Task Execute()
     {
-        var publicKey = PickPublicKey();
+        var certificatePath = PickCertificatePath();
         var aesKey = new byte[32];
         var iv = new byte[16];
         Random.Shared.NextBytes(aesKey);
@@ -34,20 +52,27 @@ internal class MakeManifestCommand
         {
             var fileName = Path.GetFileName(file);
             var compressed = await Compress(file);
-            var result = Encrypt(aesKey, iv, compressed);
-            var compressedFileName = $"{fileName}.zip.001.aes";
-            using var destination = File.Create(Path.Combine(OutputPath, compressedFileName));
-            destination.Write(result);
+            var parts = compressed.Chunk(CompressedFileSizeLimit).Select((chunk, index) =>
+            {
+                var result = Encrypt(aesKey, iv, chunk);
+                var partName = $"{fileName}.zip.{index + 1:D3}.aes";
+                using var destination = File.Create(Path.Combine(OutputPath, partName));
+                destination.Write(result);
+                return new CompressedFilePartInfo(
+                    partName,
+                    chunk.Length,
+                    HashHelpers.CalculateMD5(new MemoryStream(result))
+                );
+            });
             compressedAndZippedFiles.Add(new(
                 fileName,
-                compressedFileName,
-                new FileInfo(file).Length,
-                result.LongLength,
+                compressed.LongLength,
                 CalculateSha256Hash(file),
-                HashHelpers.CalculateMD5(new MemoryStream(result))
+                parts.ToArray()
             ));
+            await ValidateDocumentSchemaAsync(file);
         }
-        var manifest = CreateManifest(compressedAndZippedFiles, aesKey, iv, publicKey);
+        var manifest = CreateManifest(compressedAndZippedFiles, aesKey, iv, certificatePath);
         var schemaSet = new XmlSchemaSet();
         schemaSet.Add("http://e-dokumenty.mf.gov.pl", "https://www.podatki.gov.pl/media/5881/initupload.xsd");
         manifest.Validate(schemaSet, null);
@@ -56,45 +81,110 @@ internal class MakeManifestCommand
         {
             case AESKeyBehaviour.ToFile:
                 var path = Path.Combine(OutputPath, "aes_key.base64.txt");
-                Console.WriteLine($"Zapisuję klucz AES (base64 encoded) do pliku {path}");
+                Console.WriteLine(string.Format(Strings.SavingBase64AesKey, path));
                 await File.WriteAllTextAsync(path, Convert.ToBase64String(aesKey));
                 break;
             case AESKeyBehaviour.ToConsole:
-                Console.WriteLine($"AES key (base64 encoded): '{Convert.ToBase64String(aesKey)}'");
+                Console.WriteLine(string.Format(Strings.AesKey, Convert.ToBase64String(aesKey)));
                 break;
             default:
                 break;
         }
-        Console.WriteLine($"Pakiet plików gotowy do wysyłki w folderze \"{Path.GetFullPath(OutputPath)}\"");
-        Console.WriteLine($"Aby dokonać wysyłki, wywołaj ten program ponownie w następujący sposób:");
-        Console.WriteLine($"{AppDomain.CurrentDomain.FriendlyName} send -e {EnvironmentType} -p \"{Path.Combine(OutputPath, ManifestFileName)}");
-
+        if (!NoHelpText)
+        {
+            Console.WriteLine(string.Format(Strings.FilesReadyToSend, Path.GetFullPath(OutputPath)));
+            Console.WriteLine(Strings.ToSendEnterFollowingCommand);
+            Console.WriteLine($"{AppDomain.CurrentDomain.FriendlyName} send -e {EnvironmentType} -p \"{Path.Combine(OutputPath, ManifestFileName)}");
+        }
     }
 
-    private string PickPublicKey()
+    private string PickCertificatePath()
     {
-        if (PublicKeyFile is not null)
-            return File.ReadAllText(PublicKeyFile);
+        if (CertificateFile is not null)
+            return CertificateFile;
         return EnvironmentType switch
         {
-            EnvironmentType.Test => """
-            -----BEGIN PUBLIC KEY-----
-            MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmxUn6SiIGOkkpDXcVq7h
-            Cs3ZDubg0cFhoHcpcwAodWIAdPQeoxoyBtXo4fq5K7ia1Uai9sZMkT2lcC393BF8
-            VMTW9Uvn1HrYWGLMTXmsSMkovLMP130Nf5qIpAV3mDktQxCYtrKsDIgIHFV5cN4q
-            wJF12zA8CEwbYZzWSrIw3MGYTYF3+6kHH5AVIGKT57wwJaME/Kcn6G2wXVdspgzH
-            GWYnnwt03bKHJCRfcgP1xY0F6MwvsxHqQ5SknF0uLQ2MsEPoHMPrlBDogJMO9VZ9
-            Zex6tBdntNM2C3DQJMg/g8yGDxzWTnQHLRx+bFmx5BdX/VSaaazt6ZUHYN/Xfska
-            BQIDAQAB
-            -----END PUBLIC KEY-----
-            """,
-            _ => throw new NotImplementedException("Certyfikat dla tego środowiska nie został zapisany w programie")
+            EnvironmentType.Test => Path.Combine(CertificatesDirectoryPath, "test_env.pem"),
+            EnvironmentType.Production => Path.Combine(CertificatesDirectoryPath, "production_env.pem"),
+            _ => throw new NotImplementedException(Strings.CertificateNotSaved)
         };
     }
 
-    private XDocument CreateManifest(List<CompressedFileInfo> compressedAndZippedFiles, byte[] aesKey, byte[] iv, string publicKey)
+    private async Task ValidateDocumentSchemaAsync(string documentPath)
     {
-        var encryptedAndEncodedAesKey = EncryptAndEncodeAesKey(aesKey, publicKey);
+        var schema = await PickSchemaAsync(Path.GetFileName(documentPath));
+        var document = XDocument.Load(documentPath);
+        Console.WriteLine(string.Format(Strings.ValidatingFile, documentPath));
+        var success = true;
+        try
+        {
+            document.Validate(schema, (o, e) =>
+            {
+                ValidationErrorHandler(o, e);
+                success = false;
+            });
+            if (success)
+                Console.WriteLine("OK");
+            else
+            {
+                Console.WriteLine(Strings.ValidationFailed);
+                throw new FileFailedValidationException();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(string.Format(Strings.ValidationErrorMessage, documentPath, ex.Message));
+            throw;
+        }
+    }
+
+    private void ValidationErrorHandler(object? sender, ValidationEventArgs e)
+    {
+        Console.WriteLine(e.Message);
+    }
+    private async Task<XmlSchemaSet> PickSchemaAsync(string v)
+    {
+        var result = new XmlSchemaSet();
+        foreach (var (regex, schema) in _schemaPaths)
+            if (regex.IsMatch(v))
+            {
+                using var reader = File.OpenText(schema);
+                var xmlSchema = XmlSchema.Read(reader, ValidationErrorHandler);
+
+                result.Add(xmlSchema!);
+                await LoadSchemasRecursivley(xmlSchema, result);
+                result.Compile();
+                return result;
+            }
+        throw new Exception("Unknown file type");
+    }
+
+    private async Task LoadSchemasRecursivley(XmlSchema schema, XmlSchemaSet schemaSet)
+    {
+        foreach (var include in schema.Includes)
+        {
+            using var data = await LoadSchema(include);
+            var newSchema = XmlSchema.Read(data, ValidationErrorHandler)!;
+            schemaSet.Add(newSchema);
+            await LoadSchemasRecursivley(newSchema, schemaSet);
+        }
+    }
+
+    private async Task<Stream> LoadSchema(XmlSchemaObject include)
+    {
+        var path = include switch
+        {
+            XmlSchemaImport import => import.SchemaLocation,
+            XmlSchemaInclude inc => inc.SchemaLocation,
+            _ => include.SourceUri
+        } ?? throw new Exception($"Failed to find schema location for element: {include}");
+
+        return await (await new HttpClient().GetAsync(path!)).Content.ReadAsStreamAsync();
+    }
+
+    private XDocument CreateManifest(List<CompressedFileInfo> compressedAndZippedFiles, byte[] aesKey, byte[] iv, string certificatePath)
+    {
+        var encryptedAndEncodedAesKey = EncryptAndEncodeAesKey(aesKey, certificatePath);
         var xmlns = XNamespace.Get("http://e-dokumenty.mf.gov.pl");
         var xsi = XNamespace.Get("http://www.w3.org/2001/XMLSchema-instance");
         var schemaLocation = XNamespace.Get("http://e-dokumenty.mf.gov.pl https://www.podatki.gov.pl/media/5881/initupload.xsd");
@@ -167,26 +257,34 @@ internal class MakeManifestCommand
                         )
                     )
                 ),
-                new XElement(
-                    xmlns + "FileSignature",
-                    new XElement(xmlns + "OrdinalNumber", 1),
-                    new XElement(xmlns + "FileName", info.CompressedFileName),
-                    new XElement(xmlns + "ContentLength", info.CompressedContentLength),
+                info.Parts.Select((part, index) =>
                     new XElement(
-                        xmlns + "HashValue",
-                        new XAttribute("algorithm", "MD5"),
-                        new XAttribute("encoding", "Base64"),
-                        info.MD5HashValueBase64
+                        xmlns + "FileSignature",
+                        new XElement(xmlns + "OrdinalNumber", index + 1),
+                        new XElement(xmlns + "FileName", part.Name),
+                        new XElement(xmlns + "ContentLength", part.ContentLength),
+                        new XElement(
+                            xmlns + "HashValue",
+                            new XAttribute("algorithm", "MD5"),
+                            new XAttribute("encoding", "Base64"),
+                            part.MD5HashValueBase64
+                        )
                     )
                 )
             )
         );
     }
 
-    private string EncryptAndEncodeAesKey(byte[] aesKey, string publicKey)
+    private string EncryptAndEncodeAesKey(byte[] aesKey, string certificatePath)
     {
-        var rsa = RSA.Create();
-        rsa.ImportFromPem(publicKey);
+        using var cert = new X509Certificate2(certificatePath);
+        if (cert.NotAfter < DateTime.Now)
+        {
+            Console.WriteLine(Strings.CertificateExpiredWarning);
+            if (FailOnExpiredCertificate)
+                throw new Exception("Expired certificate");
+        }
+        var rsa = cert.PublicKey.GetRSAPublicKey() ?? throw new Exception();
         var result = rsa.Encrypt(aesKey, RSAEncryptionPadding.Pkcs1);
         return Convert.ToBase64String(result);
     }
@@ -225,10 +323,17 @@ internal class MakeManifestCommand
 
     private readonly record struct CompressedFileInfo(
         string FileName,
-        string CompressedFileName,
         long ContentLength,
-        long CompressedContentLength,
         byte[] SHA256HashValue,
+        CompressedFilePartInfo[] Parts
+    );
+
+    private readonly record struct CompressedFilePartInfo(
+        string Name,
+        long ContentLength,
         string MD5HashValueBase64
     );
+
+    [GeneratedRegex("^ITP.*")]
+    private static partial Regex ITPRegex();
 }

@@ -8,10 +8,60 @@
 		<Authors>Adam Grabski</Authors>
 		<Copyright>Copyright $([System.DateTime]::Now.Year) $(Authors)</Copyright>
 		<PublishSingleFile>true</PublishSingleFile>
+		<NeutralResourcesLanguage>pl</NeutralResourcesLanguage>
 	</PropertyGroup>
-
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<DebugSymbols>False</DebugSymbols>
+		<DebugType>None</DebugType>
+	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Certificates\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Schemas\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Docs\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Localisation\Commands.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Commands.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Localisation\Strings.en.Designer.cs">
+			<DependentUpon>Strings.en.resx</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+		<Compile Update="Localisation\Strings.pl.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Strings.pl.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="Localisation\Commands.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>Commands.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localisation\Strings.en.resx">
+			<LastGenOutput>Strings.en.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Localisation\Strings.pl.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>Strings.pl.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
+
 
 </Project>

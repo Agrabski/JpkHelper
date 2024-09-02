@@ -1,11 +1,27 @@
-{
-  "profiles": {
-    "itp make": {
-      "commandName": "Project",
-      "commandLineArgs": "make -f \"E:\\Datecs\\itp\\program_tests\\ITP_15072024_1.xml\" -k ToConsole"
-    },
-    "itp help": {
-      "commandName": "Project"
+  {
+    "profiles": {
+      "itp make": {
+        "commandName": "Project",
+        "commandLineArgs": "make -f \"E:\\Datecs\\itp\\linux_test\\ITP_15072024_1.xml\" -k ToConsole -q"
+      },
+      "itp make (invalid)": {
+        "commandName": "Project",
+        "commandLineArgs": "make -f E:\\Datecs\\itp\\17072024_p\\ITP_15072024_1.xml -k ToConsole -q"
+      },
+      "itp send": {
+        "commandName": "Project",
+        "commandLineArgs": "send -p \"E:\\Datecs\\itp\\latest_signed\\InitUpload 5_MD.xml\""
+      },
+      "itp help": {
+        "commandName": "Project"
+      },
+      "itp help make": {
+        "commandName": "Project",
+        "commandLineArgs": "help make"
+      },
+      "itp help send": {
+        "commandName": "Project",
+        "commandLineArgs": "send"
+      }
     }
-  }
 }
