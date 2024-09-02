@@ -39,6 +39,11 @@ try
 }
 catch (FileFailedValidationException)
 {
+    return 2;
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error occured: {ex}");
     return 1;
 }
 

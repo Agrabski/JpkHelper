@@ -18,6 +18,11 @@ The `JpkHelper make` command validates and prepares a set of files to be sent.
 Validation schema is picked based on the name of the file.
 For instance, files for ITP (Informacje o Transakcjach Płatniczych) must start with `ITP` (example: `ITP_15022024.xml`).
 
+To see a complete list of flags and their meanings, use the help command:
+```
+jpkhelper help make
+```
+
 ### Basic usage
 
 The list of files is specified using the `--files` or `-f` flags.
@@ -94,3 +99,35 @@ Currently the `systemCode` field is hard-coded to ITP (2)
 - [ ] CUK
 - [ ] ALK
 - [ ] JPK_GV
+
+## Uploading files
+
+Uploading the files is a straight-forward process.
+The `send` command works on the `initUpload.xml` file.
+It takes the list of files to be sent, from the contents of `initUpload.xml` and looks for them in the same directory as the `initUpload.xml`.
+
+### Usage example
+Lets assume you have the following directory structure:
+```
+C:\
+├── ITP_Ready
+|   ├── InitUpload.xml
+|   ├── ITP_1.xml.zip.001.aes
+|   ├── ITP_2.xml.zip.001.aes
+|   ├── ITP_2.xml.zip.002.aes
+|   ├── ITP_2.xml.zip.003.aes
+|   ├── ITP_2.xml.zip.004.aes
+|   ├── ITP_2.xml.zip.005.aes
+|   ├── ITP_3.xml.zip.001.aes
+
+```
+Where all `.xml.zip.XXX.aes` files are mentioned in the `InitUpload.xml`.
+To perform the upload, use the following commands:
+Production enviroment:
+```
+jpkHelper send -p c:\ITP_Ready\InitUpload.xml -e Production
+```
+Test enviroment:
+```
+jpkHelper send -p c:\ITP_Ready\InitUpload.xml -e Test
+```
