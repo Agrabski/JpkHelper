@@ -32,12 +32,12 @@ internal partial class MakeManifestCommand
     [Option("fail-on-expired-certificate", Default = true, HelpText = nameof(Commands.MakeManifestFailOnExpiredCertificateProperty), ResourceType = typeof(Commands))]
     public bool FailOnExpiredCertificate { get; set; }
 
-    private string CertificatesDirectoryPath => Path.Combine(BinDirectory, "Certificates");
-    private string SchemasDirectoryPath => Path.Combine(BinDirectory, "Schemas");
+    private static string CertificatesDirectoryPath => Path.Combine(BinDirectory, "Certificates");
+    private static string SchemasDirectoryPath => Path.Combine(BinDirectory, "Schemas");
 
     private static string BinDirectory => Path.GetDirectoryName(AppContext.BaseDirectory) ?? "";
 
-    private const int CompressedFileSizeLimit = 60;
+    private const int CompressedFileSizeLimit = 60 * 1024 * 1024; // 60 MB (Windows flavour so actually 60MiB) TODO: ask the ministry of finance for clarification
 
     internal async Task Execute()
     {

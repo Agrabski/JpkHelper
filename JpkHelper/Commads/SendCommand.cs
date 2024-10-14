@@ -110,7 +110,7 @@ internal class SendCommand
             throw new Exception(await response.Content.ReadAsStringAsync());
         try
         {
-            Console.WriteLine($"FinishUpload response: {await response.Content.ReadAsStringAsync()}");
+            Console.WriteLine($"FinishUpload response: {response.StatusCode} {await response.Content.ReadAsStringAsync()}");
         }
         catch (Exception) { }
 
