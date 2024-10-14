@@ -4,6 +4,10 @@
         "commandName": "Project",
         "commandLineArgs": "make -f \"E:\\Datecs\\itp\\linux_test\\ITP_15072024_1.xml\" -k ToConsole -q"
       },
+      "itp make production": {
+        "commandName": "Project",
+        "commandLineArgs": "make -f \"E:\\Datecs\\itp\\linux_test\\ITP_15072024_1.xml\" -k ToConsole -q -e Production"
+      },
       "itp make (invalid)": {
         "commandName": "Project",
         "commandLineArgs": "make -f E:\\Datecs\\itp\\17072024_p\\ITP_15072024_1.xml -k ToConsole -q"
