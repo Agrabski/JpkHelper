@@ -3,6 +3,8 @@ name: Release
 on:
   push:
     branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
 
@@ -21,10 +23,10 @@ jobs:
     - name: Install .NET Core
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.0.x
+        dotnet-version: 8.0.x
 
     - name: Create the app package
-      run: dotnet publish JpkHelper -p:ApplicationVersion=${{ env.VERSION }} -p:ApplicationDisplayVersion=${{ env.VERSION }} -f net9.0 -o out -c Release -r win-x64
+      run: dotnet publish JpkHelper -p:ApplicationVersion=${{ env.VERSION }} -p:ApplicationDisplayVersion=${{ env.VERSION }} -f net8.0 -o out -c Release -r win-x64
 
     - name: Zip artifact
       run: zip -r jpkhelper_${{ env.VERSION }}.zip out
