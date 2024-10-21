@@ -2,7 +2,7 @@
     "profiles": {
       "itp make": {
         "commandName": "Project",
-        "commandLineArgs": "make -f \"E:\\Datecs\\itp\\linux_test\\ITP_15072024_1.xml\" -k ToConsole -q"
+        "commandLineArgs": "make -f \"E:\\Datecs\\itp\\linux_test\\ITP_15072024_1.xml\" -k ToConsole"
       },
       "itp make production": {
         "commandName": "Project",
