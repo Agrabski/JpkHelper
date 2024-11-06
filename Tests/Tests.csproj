@@ -26,9 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="EncryptionTestFiles\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Update="EncryptionTestFiles\*" CopyToOutputDirectory="PreserveNewest"/>
+    <None Update="MakeManifestTestFiles\*" CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
 
   <ItemGroup>
