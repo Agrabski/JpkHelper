@@ -13,7 +13,7 @@ public class MakeManifestTests
             OutputPath = "./two-files"
         };
         await command.Execute();
-        Assert.True(File.Exists($"./two-files/ITP_1/{MakeManifestCommand.ManifestFileName}"));
-        Assert.True(File.Exists($"./two-files/ITP_2/{MakeManifestCommand.ManifestFileName}"));
+        Assert.True(File.Exists($"./two-files/ITP_1-{MakeManifestCommand.ManifestFileName}"));
+        Assert.True(File.Exists($"./two-files/ITP_2-{MakeManifestCommand.ManifestFileName}"));
     }
 }

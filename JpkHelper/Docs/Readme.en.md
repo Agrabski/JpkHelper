@@ -71,7 +71,9 @@ C:\
 |   ├── ITP_2.xml
 |   ├── ITP_3.xml
 ├── ITP_Ready
-|   ├── InitUpload.xml
+|   ├── ITP_1-initUpload.xml
+|   ├── ITP_2-initUpload.xml
+|   ├── ITP_3-initUpload.xml
 |   ├── ITP_1.xml.zip.001.aes
 |   ├── ITP_2.xml.zip.001.aes
 |   ├── ITP_2.xml.zip.002.aes
