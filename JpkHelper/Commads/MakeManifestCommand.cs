@@ -9,13 +9,13 @@ using System.Xml.Schema;
 
 namespace JpkHelper.Commads;
 [Verb("make", HelpText = nameof(Commands.MakeCommandHelpText), ResourceType = typeof(Commands))]
-internal partial class MakeManifestCommand
+public partial class MakeManifestCommand
 {
     private readonly Dictionary<Regex, string> _schemaPaths = new()
     {
         [ITPRegex()] = "Schemas/ITP_v2-2.xsd"
     };
-    private const string ManifestFileName = "initUpload.xml";
+    public const string ManifestFileName = "initUpload.xml";
 
     [Option('f', "files", HelpText = nameof(Commands.MakeManifestFilesProperty), ResourceType = typeof(Commands), Min = 1)]
     public required IEnumerable<string> FilePaths { get; set; }
@@ -39,7 +39,7 @@ internal partial class MakeManifestCommand
 
     private const int CompressedFileSizeLimit = 60 * 1024 * 1024; // 60 MB (Windows flavour so actually 60MiB) TODO: ask the ministry of finance for clarification
 
-    internal async Task Execute()
+    public async Task Execute()
     {
         var certificatePath = PickCertificatePath();
         var aesKey = new byte[32];
