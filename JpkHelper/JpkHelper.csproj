@@ -41,10 +41,10 @@
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
 		</Compile>
-		<Compile Update="Localisation\Strings.pl.Designer.cs">
+		<Compile Update="Localisation\Strings.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
-			<DependentUpon>Strings.pl.resx</DependentUpon>
+			<DependentUpon>Strings.resx</DependentUpon>
 		</Compile>
 	</ItemGroup>
 
@@ -57,7 +57,7 @@
 			<LastGenOutput>Strings.en.Designer.cs</LastGenOutput>
 			<Generator>PublicResXFileCodeGenerator</Generator>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Localisation\Strings.pl.resx">
+		<EmbeddedResource Update="Localisation\Strings.resx">
 			<Generator>PublicResXFileCodeGenerator</Generator>
 			<LastGenOutput>Strings.pl.Designer.cs</LastGenOutput>
 		</EmbeddedResource>
