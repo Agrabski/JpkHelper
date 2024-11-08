@@ -83,7 +83,7 @@ public partial class MakeManifestCommand
             });
             var compressedAndZippedFile = new CompressedFileInfo(
                 fileName,
-                compressed.LongLength,
+                new FileInfo(file).Length,
                 CalculateSha256Hash(file),
                 parts.ToArray()
             );
