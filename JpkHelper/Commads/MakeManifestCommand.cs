@@ -77,7 +77,7 @@ public partial class MakeManifestCommand
                 destination.Write(result);
                 return new CompressedFilePartInfo(
                     partName,
-                    chunk.Length,
+                    result.Length,
                     HashHelpers.CalculateMD5(new MemoryStream(result))
                 );
             });
