@@ -13,6 +13,7 @@ jobs:
     env:
       VERSION_TAG: JPKv0_0_9
       VERSION: '0.0.9'
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
