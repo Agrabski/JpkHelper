@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml.Linq;
@@ -14,7 +15,8 @@ public class MakeManifestTests
         {
             FilePaths = ["MakeManifestTestFiles/ITP_1.xml", "MakeManifestTestFiles/ITP_2.xml"],
             OutputPath = "./two-files",
-            EnvironmentType = EnvironmentType.Test
+            EnvironmentType = EnvironmentType.Test,
+            AESKeyBehaviour = AESKeyBehaviour.ToFile
         };
         await command.Execute();
         Assert.True(File.Exists($"./two-files/ITP_1-{MakeManifestCommand.ManifestFileName}"));
@@ -62,5 +64,17 @@ public class MakeManifestTests
             .First(d => d.Name.LocalName == "ContentLength" && d.Parent.Name.LocalName == "Document")
             .Value;
         Assert.Equal(new FileInfo(file).Length, long.Parse(originalFileLength));
+        var iv = Convert.FromBase64String(m.Descendants().First(d => d.Name.LocalName == "IV").Value);
+        var aesKey = Convert.FromBase64String(File.ReadAllText($"two-files/{Path.GetFileName(file)}.aeskey.base64.txt"));
+        var encryptedFiles = File.ReadAllBytes(encryptedFile);
+        using var aes = Aes.Create();
+        aes.BlockSize = 128;
+        aes.Key = aesKey;
+        var unencryptedArchiveStream = new MemoryStream(aes.DecryptCbc(encryptedFiles, iv, PaddingMode.PKCS7));
+        using var archive = new ZipArchive(unencryptedArchiveStream, ZipArchiveMode.Read);
+        var unencryptedStream = archive.Entries.First().Open();
+        var unencrypted = new MemoryStream();
+        unencryptedStream.CopyTo(unencrypted);
+        Assert.Equal(File.ReadAllBytes(file), unencrypted.ToArray());
     }
 }
