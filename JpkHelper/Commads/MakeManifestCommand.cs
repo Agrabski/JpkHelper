@@ -71,7 +71,7 @@ public partial class MakeManifestCommand
             var compressed = await Compress(file);
             var parts = compressed.Chunk(CompressedFileSizeLimit).Select((chunk, index) =>
             {
-                var result = Encrypt(aesKey, iv, chunk);
+                var result = EncryptionHelper.Encrypt(aesKey, iv, chunk);
                 var partName = $"{fileName}.zip.{index + 1:D3}.aes";
                 using var destination = File.Create(Path.Combine(OutputPath, partName));
                 destination.Write(result);
@@ -80,7 +80,9 @@ public partial class MakeManifestCommand
                     result.Length,
                     HashHelpers.CalculateMD5(new MemoryStream(result))
                 );
-            });
+            }).ToArray();
+            foreach (var part in parts)
+                AssertPartCanBeDecrypted(part, aesKey, iv);
             var compressedAndZippedFile = new CompressedFileInfo(
                 fileName,
                 new FileInfo(file).Length,
@@ -98,7 +100,7 @@ public partial class MakeManifestCommand
             switch (AESKeyBehaviour)
             {
                 case AESKeyBehaviour.ToFile:
-                    var path = Path.Combine(OutputPath, "aes_key.base64.txt");
+                    var path = Path.Combine(OutputPath, $"{fileName}.aeskey.base64.txt");
                     Console.WriteLine(string.Format(Strings.SavingBase64AesKey, path));
                     await File.WriteAllTextAsync(path, Convert.ToBase64String(aesKey));
                     break;
@@ -117,6 +119,15 @@ public partial class MakeManifestCommand
             Console.WriteLine(Strings.ToSendEnterFollowingCommand);
             Console.WriteLine(string.Join("\n", sendCommands));
         }
+    }
+
+    private void AssertPartCanBeDecrypted(CompressedFilePartInfo part, byte[] aesKey, byte[] iv)
+    {
+        var bytes = File.ReadAllBytes(Path.Combine(OutputPath, part.Name));
+        using var aes = Aes.Create();
+        aes.BlockSize = EncryptionHelper.BlockSize;
+        aes.Key = aesKey;
+        aes.DecryptCbc(bytes, iv, PaddingMode.PKCS7);
     }
 
     private string PickFileName(bool multipleFiles, string file)
@@ -329,16 +340,6 @@ public partial class MakeManifestCommand
         return hash.ComputeHash(f);
     }
 
-    private static byte[] Encrypt(byte[] aesKey, byte[] iv, byte[] compressed)
-    {
-        using var aes = Aes.Create();
-        aes.Key = aesKey;
-        aes.KeySize = 256;
-        aes.BlockSize = 128;
-        aes.Mode = CipherMode.CBC;
-        return aes.EncryptCbc(compressed.AsSpan(), iv, PaddingMode.PKCS7);
-    }
-
     private static async Task<byte[]> Compress(string filePath)
     {
         var entryName = Path.GetFileName(filePath);
@@ -346,8 +347,8 @@ public partial class MakeManifestCommand
         using (var archive = new ZipArchive(buffer, ZipArchiveMode.Create, true))
         {
             var entry = archive.CreateEntry(entryName);
-            using var entryStream = entry.Open();
-            using var sourceStream = File.OpenRead(filePath);
+            await using var entryStream = entry.Open();
+            await using var sourceStream = File.OpenRead(filePath);
             await sourceStream.CopyToAsync(entryStream);
             entryStream.Close();
         }
