@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest  
     env:
       VERSION_TAG: JPKv0_0_9
-      VERSION: '0.0.9'
+      VERSION: '0.0.10'
 
     steps:
     - name: Checkout

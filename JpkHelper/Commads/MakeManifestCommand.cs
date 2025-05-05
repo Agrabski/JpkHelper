@@ -14,7 +14,7 @@ public partial class MakeManifestCommand
 {
     private readonly Dictionary<Regex, string> _schemaPaths = new()
     {
-        [ITPRegex()] = "Schemas/ITP_v2-2.xsd"
+        [ITPRegex()] = "Schemas/ITP_v2-3.xsd"
     };
 
     public const string ManifestFileName = "initUpload.xml";
@@ -250,7 +250,7 @@ public partial class MakeManifestCommand
             xmlns + "Document",
             new XElement(
                 xmlns + "FormCode",
-                new XAttribute("schemaVersion", "2-2"),
+                new XAttribute("schemaVersion", "2-3"),
                 new XAttribute("systemCode", "ITP (2)"),
                 "ITP"
             ),
