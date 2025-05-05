@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-			xmlns:etd="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/01/05/eD/DefinicjeTypy/"
-			xmlns:kw="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2021/12/23/eD/KodyWalut/"
-			xmlns:tns="http://itp.mf.gov.pl/wzor/2023/01/09/01091/"
-			targetNamespace="http://itp.mf.gov.pl/wzor/2023/01/09/01091/" elementFormDefault="qualified"
+			xmlns:etd="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/09/13/eD/DefinicjeTypy/"
+			xmlns:kck="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2025/01/01/eD/KodyCECHKRAJOW/"
+			xmlns:kk="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2023/09/06/eD/KodyKrajow/"
+			xmlns:tns="http://itp.mf.gov.pl/wzor/2025/01/28/01281/"
+			targetNamespace="http://itp.mf.gov.pl/wzor/2025/01/28/01281/" elementFormDefault="qualified"
 			attributeFormDefault="unqualified" xml:lang="pl">
-	<xsd:import namespace="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/01/05/eD/DefinicjeTypy/"
-				schemaLocation="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/01/05/eD/DefinicjeTypy/StrukturyDanych_v10-0E.xsd"/>
-	<xsd:import namespace="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2021/12/23/eD/KodyWalut/"
-				schemaLocation="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2021/12/23/eD/KodyWalut/KodyWalut_v1-0E.xsd"/>
+	<xsd:import namespace="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2023/09/06/eD/KodyKrajow/"
+				schemaLocation="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2023/09/06/eD/KodyKrajow/KodyKrajow_v13-0E.xsd"/>
+	<xsd:import namespace="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/09/13/eD/DefinicjeTypy/"
+				schemaLocation="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2022/09/13/eD/DefinicjeTypy/StrukturyDanych_v12-0E.xsd"/>
+	<xsd:import namespace="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2025/01/01/eD/KodyCECHKRAJOW/"
+				schemaLocation="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2025/01/01/eD/KodyCECHKRAJOW/KodyCechKrajowWaluty_v6-0E.xsd"/>
 	<xsd:simpleType name="TKodyKrajowUE">
 		<xsd:annotation>
 			<xsd:documentation>Kody krajów członkowskich Unii Europejskiej, w tym kod dla obszaru Irlandii Północnej
@@ -172,7 +175,7 @@
 					<xsd:simpleContent>
 						<xsd:extension base="tns:TKodFormularza">
 							<xsd:attribute name="kodSystemowy" type="xsd:string" use="required" fixed="ITP (2)"/>
-							<xsd:attribute name="wersjaSchemy" type="xsd:string" use="required" fixed="2-2"/>
+							<xsd:attribute name="wersjaSchemy" type="xsd:string" use="required" fixed="2-3"/>
 						</xsd:extension>
 					</xsd:simpleContent>
 				</xsd:complexType>
@@ -180,7 +183,7 @@
 			<xsd:element name="WariantFormularza">
 				<xsd:simpleType>
 					<xsd:restriction base="xsd:byte">
-						<xsd:enumeration value="3"/>
+						<xsd:enumeration value="2"/>
 					</xsd:restriction>
 				</xsd:simpleType>
 			</xsd:element>
@@ -191,7 +194,7 @@
 				</xsd:annotation>
 				<xsd:simpleType>
 					<xsd:restriction base="etd:TDataCzas">
-						<xsd:minInclusive value="2023-01-01T00:00:00Z"/>
+						<xsd:minInclusive value="2025-04-01T00:00:00Z"/>
 					</xsd:restriction>
 				</xsd:simpleType>
 			</xsd:element>
@@ -211,7 +214,7 @@
 				</xsd:annotation>
 				<xsd:simpleType>
 					<xsd:restriction base="etd:TRok">
-						<xsd:minInclusive value="2022"/>
+						<xsd:minInclusive value="2025"/>
 					</xsd:restriction>
 				</xsd:simpleType>
 			</xsd:element>
@@ -334,7 +337,7 @@
 					</xsd:element>
 				</xsd:sequence>
 				<xsd:sequence>
-					<xsd:element name="KodKraju" type="etd:TKodKraju" minOccurs="0">
+					<xsd:element name="KodKraju" type="kk:TKodKraju" minOccurs="0">
 						<xsd:annotation>
 							<xsd:documentation>Kod kraju nadania identyfikatora podatkowego</xsd:documentation>
 						</xsd:annotation>
@@ -418,10 +421,15 @@
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:sequence>
-			<xsd:element name="KodKraju" type="etd:TKodKraju" fixed="PL">
+			<xsd:element name="KodKraju">
 				<xsd:annotation>
 					<xsd:documentation>Kraj</xsd:documentation>
 				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="kk:TKodKraju">
+						<xsd:enumeration value="PL"/>
+					</xsd:restriction>
+				</xsd:simpleType>
 			</xsd:element>
 			<xsd:element name="Wojewodztwo" type="etd:TJednAdmin" minOccurs="0">
 				<xsd:annotation>
@@ -464,9 +472,52 @@
 				<xsd:element name="AdresPol" type="tns:TAdresPolskiITP"/>
 			</xsd:sequence>
 			<xsd:sequence>
-				<xsd:element name="AdresZagr" type="etd:TAdresZagraniczny"/>
+				<xsd:element name="AdresZagr" type="tns:TAdresZagraniczny"/>
 			</xsd:sequence>
 		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="TAdresZagraniczny">
+		<xsd:annotation>
+			<xsd:documentation>Informacje opisujące adres zagraniczny</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="KodKraju">
+				<xsd:annotation>
+					<xsd:documentation>Kraj</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="kk:TKodKraju">
+						<xsd:pattern value="P[A-KM-Z]"/>
+						<xsd:pattern value="[A-OQ-Z][A-Z]"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="KodPocztowy" type="etd:TKodPocztowy" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Kod pocztowy</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Miejscowosc" type="etd:TMiejscowosc">
+				<xsd:annotation>
+					<xsd:documentation>Miejscowość</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Ulica" type="etd:TUlica" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Ulica</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="NrDomu" type="etd:TNrBudynku" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Nr domu</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="NrLokalu" type="etd:TNrLokalu" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Nr lokalu</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="TOsobaNiefizyczna">
 		<xsd:annotation>
@@ -474,6 +525,12 @@
 		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element name="OsobaNiefizyczna" type="tns:TIdentyfikatorOsobyNiefizycznej"/>
+			<xsd:element name="AdresSiedziby" type="tns:TAdres"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="TOsobaNiefizyczna1">
+		<xsd:sequence>
+			<xsd:element name="OsobaNiefizyczna" type="tns:TIdentyfikatorOsobyNiefizycznej1"/>
 			<xsd:element name="AdresSiedziby" type="tns:TAdres"/>
 		</xsd:sequence>
 	</xsd:complexType>
@@ -498,20 +555,6 @@
 			<xsd:element name="OsobaNiefizyczna" type="tns:TIdentyfikatorOsobyNiefizycznej1"/>
 		</xsd:choice>
 	</xsd:complexType>
-	<xsd:complexType name="TOsobaNiefizyczna1">
-		<xsd:sequence>
-			<xsd:element name="OsobaNiefizyczna" type="tns:TIdentyfikatorOsobyNiefizycznej1"/>
-			<xsd:element name="AdresSiedziby" type="tns:TAdres"/>
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:simpleType name="TData">
-		<xsd:annotation>
-			<xsd:documentation>Typ daty</xsd:documentation>
-		</xsd:annotation>
-		<xsd:restriction base="etd:TData">
-			<xsd:minInclusive value="1990-01-01"/>
-		</xsd:restriction>
-	</xsd:simpleType>
 	<xsd:element name="ITP">
 		<xsd:annotation>
 			<xsd:documentation>INFORMACJA O TRANSAKCJCH PŁATNICZYCH PRZY UŻYCIU TERMINALI PŁATNICZYCH, OPROGRAMOWANIA
@@ -595,7 +638,7 @@
 																					</xsd:annotation>
 																				</xsd:element>
 																				<xsd:element name="DataOd"
-																							 type="tns:TData">
+																							 type="etd:TData">
 																					<xsd:annotation>
 																						<xsd:documentation>Data, od
 																							której rachunek akceptanta
@@ -605,7 +648,7 @@
 																					</xsd:annotation>
 																				</xsd:element>
 																				<xsd:element name="DataDo"
-																							 type="tns:TData"
+																							 type="etd:TData"
 																							 minOccurs="0">
 																					<xsd:annotation>
 																						<xsd:documentation>Data, do
@@ -628,7 +671,7 @@
 																						<xsd:sequence>
 																							<xsd:element
 																									name="KodWaluty"
-																									type="kw:TKodWaluty">
+																									type="kck:currCode_Type">
 																								<xsd:annotation>
 																									<xsd:documentation>
 																										Kod waluty
@@ -722,7 +765,7 @@
 																					</xsd:annotation>
 																				</xsd:element>
 																				<xsd:element name="DataOd"
-																							 type="tns:TData">
+																							 type="etd:TData">
 																					<xsd:annotation>
 																						<xsd:documentation>Data, od
 																							której rachunek akceptanta
@@ -732,7 +775,7 @@
 																					</xsd:annotation>
 																				</xsd:element>
 																				<xsd:element name="DataDo"
-																							 type="tns:TData"
+																							 type="etd:TData"
 																							 minOccurs="0">
 																					<xsd:annotation>
 																						<xsd:documentation>Data, do
@@ -755,7 +798,7 @@
 																						<xsd:sequence>
 																							<xsd:element
 																									name="KodWaluty"
-																									type="kw:TKodWaluty">
+																									type="kck:currCode_Type">
 																								<xsd:annotation>
 																									<xsd:documentation>
 																										Kod waluty
@@ -817,17 +860,16 @@
 					<xsd:annotation>
 						<xsd:documentation>Pouczenia dla agenta. Wartość 1 oznacza potwierdzenie zapoznania się z
 							treścią i akceptację poniższych pouczeń:
-							1. Wypełnianie obowiązków, o których mowa w art. 278b, podlega kontroli wykonywanej przez
+							1. Wypełnianie obowiązków, o których mowa w art. 49aaa, podlega kontroli wykonywanej przez
 							Szefa Krajowej Administracji Skarbowej.
-
-							2. Zgodnie z treścią przepisu art. 278e ustawy o Krajowej Administracji Skarbowej agent
+							2. Zgodnie z treścią przepisu art. 49c ustawy o Krajowej Administracji Skarbowej agent
 							rozliczeniowy, który nie dopełnia obowiązku przekazania Szefowi Krajowej Administracji
-							Skarbowej w terminie określonym w art. 278b ust. 3 i 3a informacji, o której mowa w art.
-							278b ust. 1, przekazuje tę informację w niepełnym zakresie lub niezgodną z posiadanymi
-							informacjami lub danymi lub niezgodnie z wymaganiami określonymi w art. 49aa ust. 4, podlega
-							karze pieniężnej. Karę pieniężną nadaje Szef Krajowej Administracji Skarbowej w drodze
-							decyzji. Od decyzji przysługuje wniosek o ponowne rozpatrzenie sprawy w terminie 14 dni od
-							dnia jej doręczenia.
+							Skarbowej w terminie określonym w art. 49aaa ust. 4 informacji, o której mowa w art. 49aaa
+							ust. 1, przekazuje tę informację w niepełnym zakresie lub niezgodną z posiadanymi
+							informacjami lub danymi lub niezgodnie z wymaganiami określonymi w art. 49aaa ust. 5,
+							podlega karze pieniężnej. Karę pieniężną nadaje Szef Krajowej Administracji Skarbowej w
+							drodze decyzji. Od decyzji przysługuje wniosek o ponowne rozpatrzenie sprawy w terminie 14
+							dni od dnia jej doręczenia.
 						</xsd:documentation>
 					</xsd:annotation>
 					<xsd:simpleType>
