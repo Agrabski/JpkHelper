@@ -91,7 +91,14 @@ public partial class MakeManifestCommand
 
             var manifest = CreateManifest(compressedAndZippedFile, aesKey, iv, certificatePath);
             var schemaSet = new XmlSchemaSet();
-            schemaSet.Add("http://e-dokumenty.mf.gov.pl", "https://www.podatki.gov.pl/media/5881/initupload.xsd");
+            var initSchemaPath = Path.Combine(SchemasDirectoryPath, "initupload.xsd");
+            using (var reader = File.OpenText(initSchemaPath))
+            {
+                var xmlSchema = XmlSchema.Read(reader, ValidationErrorHandler);
+                schemaSet.Add(xmlSchema!);
+                await LoadSchemasRecursivley(xmlSchema!, schemaSet);
+                schemaSet.Compile();
+            }
             manifest.Validate(schemaSet, null);
             var manifestFileName = PickFileName(FilePaths.Count() > 1, file);
             await File.WriteAllTextAsync(Path.Combine(OutputPath, manifestFileName), manifest.ToString());
@@ -209,7 +216,18 @@ public partial class MakeManifestCommand
             _ => include.SourceUri
         } ?? throw new Exception($"Failed to find schema location for element: {include}");
 
-        return await (await new HttpClient().GetAsync(path!)).Content.ReadAsStreamAsync();
+        // If the path is an absolute HTTP/HTTPS URI, fetch over network.
+        if (Uri.IsWellFormedUriString(path, UriKind.Absolute) &&
+            (path!.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || path.StartsWith("https://", StringComparison.OrdinalIgnoreCase)))
+        {
+            return await (await new HttpClient().GetAsync(path)).Content.ReadAsStreamAsync();
+        }
+
+        // Treat as local file path (relative to SchemasDirectoryPath if not rooted)
+        var filePath = Path.IsPathRooted(path) ? path : Path.Combine(SchemasDirectoryPath, path);
+        if (!File.Exists(filePath))
+            throw new FileNotFoundException($"Schema file not found: {filePath}");
+        return File.OpenRead(filePath);
     }
 
     private XDocument CreateManifest(CompressedFileInfo compressedAndZippedFile, byte[] aesKey, byte[] iv,
@@ -219,7 +237,7 @@ public partial class MakeManifestCommand
         var xmlns = XNamespace.Get("http://e-dokumenty.mf.gov.pl");
         var xsi = XNamespace.Get("http://www.w3.org/2001/XMLSchema-instance");
         var schemaLocation =
-            XNamespace.Get("http://e-dokumenty.mf.gov.pl https://www.podatki.gov.pl/media/5881/initupload.xsd");
+            XNamespace.Get("http://e-dokumenty.mf.gov.pl initupload.xsd");
 
         return new XDocument(
             new XDeclaration("1.0", "utf-8", null),
