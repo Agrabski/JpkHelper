@@ -78,7 +78,7 @@ public class MakeManifestTests
         using var s = File.OpenRead(file);
         hash = sha256.ComputeHash(s);
         Assert.Equal(Convert.ToBase64String(hash), shaHash);
-        
+
         var originalFileLength = m
             .Descendants()
             .First(d => d.Name.LocalName == "ContentLength" && d.Parent.Name.LocalName == "Document")
