@@ -11,8 +11,8 @@ jobs:
   build:
     runs-on: ubuntu-latest  
     env:
-      VERSION_TAG: JPKv0_0_11
-      VERSION: '0.0.11'
+      VERSION_TAG: JPKv0_0_12
+      VERSION: '0.0.12'
 
     steps:
     - name: Checkout
