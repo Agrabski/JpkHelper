@@ -33,6 +33,28 @@ public class MakeManifestTests
         );
     }
 
+    [Fact]
+    public async Task ManifestReferencesBundledSchema()
+    {
+        var output = "./manifest-schema";
+        Directory.CreateDirectory(output);
+        var command = new MakeManifestCommand()
+        {
+            FilePaths = new[] { "MakeManifestTestFiles/ITP_1.xml" },
+            OutputPath = output,
+            EnvironmentType = EnvironmentType.Test,
+            AESKeyBehaviour = AESKeyBehaviour.None
+        };
+
+        await command.Execute();
+
+        var manifestPath = Path.Combine(output, MakeManifestCommand.ManifestFileName);
+        Assert.True(File.Exists(manifestPath));
+        var m = XDocument.Load(manifestPath);
+        var xsi = m.Root?.Attribute(XName.Get("schemaLocation", "http://www.w3.org/2001/XMLSchema-instance"))?.Value;
+        Assert.Equal("http://e-dokumenty.mf.gov.pl initupload.xsd", xsi);
+    }
+
     private static void AssertFileCorectnes(string manifest, string file, string encryptedFile)
     {
         var m = XDocument.Load(manifest);
@@ -58,7 +80,7 @@ public class MakeManifestTests
         using var s = File.OpenRead(file);
         hash = sha256.ComputeHash(s);
         Assert.Equal(Convert.ToBase64String(hash), shaHash);
-        
+
         var originalFileLength = m
             .Descendants()
             .First(d => d.Name.LocalName == "ContentLength" && d.Parent.Name.LocalName == "Document")
