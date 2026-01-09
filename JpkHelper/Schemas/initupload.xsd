@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns="http://e-dokumenty.mf.gov.pl" xmlns:mf="http://e-dokumenty.mf.gov.pl" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://e-dokumenty.mf.gov.pl" elementFormDefault="qualified"><script xmlns="" id="mbEGGjir.js"/>
+<xs:schema xmlns="http://e-dokumenty.mf.gov.pl" xmlns:mf="http://e-dokumenty.mf.gov.pl" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://e-dokumenty.mf.gov.pl" elementFormDefault="qualified">
     <xs:element name="InitUpload" type="mf:InitUploadType"/>
     <xs:complexType name="InitUploadType">
         <xs:sequence>
